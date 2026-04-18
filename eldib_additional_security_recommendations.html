@@ -1,0 +1,1418 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Conditional Access Policy</title>
+
+    <style>
+      :root {
+        --color-background-primary: #1f1f1f;
+        --color-background-secondary: #2a2a2a;
+        --color-background-tertiary: #333;
+
+        --color-text-primary: #ffffff;
+        --color-text-secondary: #b3b3b3;
+        --color-text-tertiary: #888;
+
+        --color-border-tertiary: #3a3a3a;
+
+        --color-background-success: #1b5e20;
+        --color-text-success: #66bb6a;
+
+        --color-background-warning: #3e2723;
+        --color-text-warning: #ffb74d;
+
+        --color-background-danger: #3b0d0d;
+        --color-text-danger: #ef5350;
+
+        --color-background-info: #0d2b3b;
+        --color-text-info: #4fc3f7;
+
+        --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+        --font-mono: monospace;
+      }
+
+      body {
+        background: #121212;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      .hdr {
+        padding: 1.25rem 1.5rem 1rem;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      .hdr h1 {
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+      .hdr p {
+        font-size: 13px;
+        color: var(--color-text-secondary);
+        margin-top: 3px;
+      }
+      .cat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 8px;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      .cat-btn {
+        padding: 10px 12px;
+        border-radius: var(--border-radius-md);
+        border: 0.5px solid var(--color-border-tertiary);
+        background: var(--color-background-primary);
+        cursor: pointer;
+        text-align: left;
+      }
+      .cat-btn.active {
+        border-color: var(--color-border-info);
+        background: var(--color-background-info);
+      }
+      .cat-btn:hover:not(.active) {
+        background: var(--color-background-secondary);
+      }
+      .cat-icon {
+        font-size: 16px;
+        margin-bottom: 4px;
+        display: block;
+      }
+      .cat-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        display: block;
+      }
+      .cat-sub {
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        margin-top: 1px;
+        display: block;
+      }
+      .cat-btn.active .cat-name,
+      .cat-btn.active .cat-sub {
+        color: var(--color-text-info);
+      }
+      .body {
+        padding: 1.25rem 1.5rem 1.5rem;
+      }
+      .pane {
+        display: none;
+      }
+      .pane.active {
+        display: block;
+      }
+      .section {
+        margin-bottom: 1.5rem;
+      }
+      .sec-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+        padding-bottom: 5px;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 9px 0;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+        gap: 12px;
+      }
+      .row:last-child {
+        border-bottom: none;
+      }
+      .rl {
+        flex: 1;
+      }
+      .rn {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+      .rd {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        margin-top: 2px;
+        line-height: 1.5;
+      }
+      .rp {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        color: var(--color-text-tertiary);
+        margin-top: 3px;
+        word-break: break-all;
+      }
+      .rv {
+        font-size: 12px;
+        font-weight: 500;
+        padding: 3px 9px;
+        border-radius: 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .v-en {
+        background: var(--color-background-success);
+        color: var(--color-text-success);
+      }
+      .v-bl {
+        background: var(--color-background-danger);
+        color: var(--color-text-danger);
+      }
+      .v-wa {
+        background: var(--color-background-warning);
+        color: var(--color-text-warning);
+      }
+      .v-in {
+        background: var(--color-background-info);
+        color: var(--color-text-info);
+      }
+      .v-ne {
+        background: var(--color-background-secondary);
+        color: var(--color-text-primary);
+        border: 0.5px solid var(--color-border-tertiary);
+      }
+      .callout {
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1.6;
+        margin-bottom: 12px;
+      }
+      .c-info {
+        background: var(--color-background-info);
+        color: var(--color-text-secondary);
+      }
+      .c-warn {
+        background: var(--color-background-warning);
+        color: var(--color-text-secondary);
+      }
+      .c-ok {
+        background: var(--color-background-success);
+        color: var(--color-text-secondary);
+      }
+      .c-err {
+        background: var(--color-background-danger);
+        color: var(--color-text-secondary);
+      }
+      .callout strong {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
+      .code-block {
+        font-size: 11px;
+        font-family: var(--font-mono);
+        background: var(--color-background-secondary);
+        border: 0.5px solid var(--color-border-tertiary);
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin: 8px 0;
+        line-height: 1.7;
+        color: var(--color-text-primary);
+        word-break: break-all;
+      }
+      .ring-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 6px;
+      }
+      .ring-card {
+        border: 0.5px solid var(--color-border-tertiary);
+        border-radius: 8px;
+        padding: 10px 12px;
+      }
+      .ring-title {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        margin-bottom: 6px;
+      }
+      .ring-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--color-text-secondary);
+        padding: 3px 0;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      .ring-row:last-child {
+        border-bottom: none;
+      }
+      .ri {
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 8px;
+        font-weight: 500;
+      }
+      .r-en {
+        background: var(--color-background-success);
+        color: var(--color-text-success);
+      }
+      .r-wa {
+        background: var(--color-background-warning);
+        color: var(--color-text-warning);
+      }
+      .priority-banner {
+        border-left: 3px solid var(--color-border-danger);
+        border-radius: 0 8px 8px 0;
+        padding: 10px 12px;
+        background: var(--color-background-danger);
+        margin-bottom: 12px;
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        line-height: 1.6;
+      }
+      .priority-banner strong {
+        color: var(--color-text-danger);
+        font-weight: 500;
+      }
+      .sim-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        padding: 9px 0;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      .sim-row:last-child {
+        border-bottom: none;
+      }
+      .sim-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--color-background-secondary);
+        border: 0.5px solid var(--color-border-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+      }
+      .sim-body {
+        flex: 1;
+      }
+      .sim-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+      }
+      .sim-desc {
+        font-size: 12px;
+        color: var(--color-text-secondary);
+        margin-top: 2px;
+        line-height: 1.5;
+      }
+      .full-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .full-table th {
+        text-align: left;
+        font-weight: 500;
+        font-size: 11px;
+        color: var(--color-text-tertiary);
+        padding: 6px 8px;
+        border-bottom: 0.5px solid var(--color-border-secondary);
+        background: var(--color-background-secondary);
+      }
+      .full-table td {
+        padding: 7px 8px;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+        color: var(--color-text-secondary);
+        vertical-align: top;
+      }
+      .full-table tr:last-child td {
+        border-bottom: none;
+      }
+      .full-table td:first-child {
+        color: var(--color-text-primary);
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <h2 class="sr-only">
+      Eldib & Co — Additional security recommendations covering email
+      authentication, patch management, passwordless, backup, and more
+    </h2>
+
+    <div class="hdr">
+      <h1>Eldib & Co — additional security recommendations</h1>
+      <p>
+        7 areas not yet covered · All within M365 Business Premium unless noted
+      </p>
+    </div>
+
+    <div class="cat-grid">
+      <button class="cat-btn active" onclick="showCat('email-auth', this)">
+        <span class="cat-icon">🔐</span>
+        <span class="cat-name">Email auth</span>
+        <span class="cat-sub">SPF · DKIM · DMARC</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('patch', this)">
+        <span class="cat-icon">🔄</span>
+        <span class="cat-name">Patch mgmt</span>
+        <span class="cat-sub">Update rings</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('passwordless', this)">
+        <span class="cat-icon">🪪</span>
+        <span class="cat-name">Passwordless</span>
+        <span class="cat-sub">Windows Hello</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('backup', this)">
+        <span class="cat-icon">💾</span>
+        <span class="cat-name">Backup</span>
+        <span class="cat-sub">M365 + endpoints</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('awareness', this)">
+        <span class="cat-icon">🎯</span>
+        <span class="cat-name">Attack simulator</span>
+        <span class="cat-sub">Phishing training</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('governance', this)">
+        <span class="cat-icon">📋</span>
+        <span class="cat-name">Governance</span>
+        <span class="cat-sub">Teams · Retention</span>
+      </button>
+      <button class="cat-btn" onclick="showCat('ir', this)">
+        <span class="cat-icon">🚨</span>
+        <span class="cat-name">Incident response</span>
+        <span class="cat-sub">IR plan · playbook</span>
+      </button>
+    </div>
+
+    <div class="body">
+      <div id="pane-email-auth" class="pane active">
+        <div class="priority-banner">
+          <strong>Most critical item in this entire guide.</strong> Without SPF,
+          DKIM, and DMARC, anyone on the internet can send an email that looks
+          like it came from @eldib.com. Your anti-phishing policy protects
+          inbound — these three records protect your domain reputation for
+          outbound and block spoofing of your own domain.
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            SPF record — who is allowed to send email as @eldib.com
+          </div>
+          <div class="callout c-info">
+            <strong>Where to add:</strong> Your domain registrar DNS settings
+            (GoDaddy / Namecheap / Cloudflare / etc.) → Add TXT record for your
+            root domain.
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Record type</div></div>
+            <span class="rv v-ne">TXT</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Host / Name</div></div>
+            <span class="rv v-ne">@ (root domain)</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">TTL</div></div>
+            <span class="rv v-ne">3600 (1 hour)</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Value — M365-only sender</div>
+              <div class="rd">
+                If all your email goes through Microsoft 365, this is the
+                correct SPF record. Add other services (Mailchimp, Zendesk,
+                etc.) with include: statements before the -all.
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            v=spf1 include:spf.protection.outlook.com -all
+          </div>
+          <div class="callout c-warn">
+            <strong>-all vs ~all:</strong> Use -all (hard fail) — it tells
+            receiving servers to REJECT email from senders not in this list.
+            ~all (soft fail) just marks them as suspicious. For Eldib & Co with
+            only M365 sending email, -all is correct and stronger.
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            DKIM — cryptographic signature on outbound email
+          </div>
+          <div class="callout c-info">
+            <strong>Where to enable:</strong> security.microsoft.com → Email &
+            collaboration → Policies & rules → Threat policies → Email
+            authentication settings → DKIM → Select your domain → Enable
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Step 1 — Enable DKIM in Defender portal</div>
+              <div class="rd">
+                Click your domain → Enable. The portal shows you two CNAME
+                records to add to your DNS.
+              </div>
+            </div>
+            <span class="rv v-in">Enable in portal first</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Step 2 — Add CNAME records to DNS</div>
+              <div class="rd">
+                Add both records your registrar provides. These point to
+                Microsoft's signing keys.
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            Host: selector1._domainkey.eldib.com<br />Value:
+            selector1-eldib-com._domainkey.eldib.onmicrosoft.com<br /><br />Host:
+            selector2._domainkey.eldib.com<br />Value:
+            selector2-eldib-com._domainkey.eldib.onmicrosoft.com
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Step 3 — Verify DKIM is signing</div>
+              <div class="rd">
+                Send an email to a Gmail account, open it → Show original → look
+                for dkim=pass in the authentication results header
+              </div>
+            </div>
+            <span class="rv v-en">Verify with Gmail header</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            DMARC — policy that ties SPF + DKIM together
+          </div>
+          <div class="callout c-warn">
+            <strong
+              >Enable DMARC AFTER SPF and DKIM are confirmed working.</strong
+            >
+            A wrong DMARC policy with p=reject before DKIM is ready will cause
+            your own legitimate emails to be rejected.
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Record type</div></div>
+            <span class="rv v-ne">TXT</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Host / Name</div></div>
+            <span class="rv v-ne">_dmarc.eldib.com</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Phase 1 — Monitor (none policy)</div>
+              <div class="rd">
+                Start with p=none so you receive reports but no emails are
+                blocked. Run this for 2 weeks and review the rua reports to
+                identify all your legitimate sending sources.
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            v=DMARC1; p=none; rua=mailto:dmarc-reports@eldib.com;
+            ruf=mailto:dmarc-reports@eldib.com; fo=1;
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Phase 2 — Quarantine</div>
+              <div class="rd">
+                After confirming all legitimate senders pass, switch
+                p=quarantine. Suspicious emails go to spam instead of inbox.
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            v=DMARC1; p=quarantine; pct=100; rua=mailto:dmarc-reports@eldib.com;
+            fo=1;
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Phase 3 — Reject (final goal)</div>
+              <div class="rd">
+                Full enforcement. Any email that fails DMARC is rejected
+                outright. No spoofing of @eldib.com is possible.
+              </div>
+            </div>
+          </div>
+          <div class="code-block">
+            v=DMARC1; p=reject; pct=100; rua=mailto:dmarc-reports@eldib.com;
+            fo=1;
+          </div>
+          <div class="callout c-ok">
+            <strong>Free DMARC report analyzer:</strong> Use dmarcian.com or
+            mxtoolbox.com/dmarc to parse the XML reports you receive at
+            dmarc-reports@eldib.com — they are unreadable raw.
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-patch" class="pane">
+        <div class="callout c-warn">
+          <strong>Unpatched systems are the #1 ransomware entry point.</strong>
+          Windows Update for Business via Intune gives you controlled, tested
+          patch deployment across all Eldib & Co laptops without relying on
+          users clicking "Update".
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Update ring strategy — 3 rings</div>
+          <div class="ring-grid">
+            <div class="ring-card">
+              <div class="ring-title">Ring 1 — Pilot (IT team only)</div>
+              <div class="ring-row">
+                <span>Target group</span><span>IT Admins (2-3 people)</span>
+              </div>
+              <div class="ring-row">
+                <span>Quality updates deferral</span><span>0 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Feature updates deferral</span><span>0 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Purpose</span
+                ><span>Gets patches first — test for issues</span>
+              </div>
+            </div>
+            <div class="ring-card">
+              <div class="ring-title">Ring 2 — Early adopters (20%)</div>
+              <div class="ring-row">
+                <span>Target group</span><span>Tech-comfortable users</span>
+              </div>
+              <div class="ring-row">
+                <span>Quality updates deferral</span><span>7 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Feature updates deferral</span><span>30 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Purpose</span
+                ><span>Broader test before full rollout</span>
+              </div>
+            </div>
+            <div class="ring-card">
+              <div class="ring-title">Ring 3 — General (all other users)</div>
+              <div class="ring-row">
+                <span>Target group</span><span>All Users</span>
+              </div>
+              <div class="ring-row">
+                <span>Quality updates deferral</span><span>14 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Feature updates deferral</span><span>60 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Purpose</span><span>Stable, tested patches only</span>
+              </div>
+            </div>
+            <div class="ring-card">
+              <div class="ring-title">Common settings — all rings</div>
+              <div class="ring-row">
+                <span>Automatic update behavior</span
+                ><span>Auto-install at maintenance time</span>
+              </div>
+              <div class="ring-row">
+                <span>Active hours</span><span>8:00 AM – 6:00 PM</span>
+              </div>
+              <div class="ring-row">
+                <span>Deadline for quality updates</span><span>3 days</span>
+              </div>
+              <div class="ring-row">
+                <span>Restart grace period</span><span>2 days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Create update rings in Intune</div>
+          <div class="callout c-info">
+            <strong>Path:</strong> Intune → Devices → Windows → Update rings for
+            Windows 10 and later → Create profile. Create one profile per ring
+            and assign to the matching Entra ID group.
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Microsoft 365 Apps update channel</div>
+              <div class="rd">
+                Separately control how Word, Excel, Outlook, Teams update via
+                Intune Office update policy
+              </div>
+              <div class="rp">
+                Intune → Apps → Policies for Office apps → Microsoft 365 Apps
+                update channel
+              </div>
+            </div>
+            <span class="rv v-ne">Monthly Enterprise Channel</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Driver updates</div>
+              <div class="rd">
+                Include Windows driver updates in the same update rings — fixes
+                hardware vulnerabilities
+              </div>
+            </div>
+            <span class="rv v-en">Include drivers</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Pause updates (emergency)</div>
+              <div class="rd">
+                If a bad patch breaks something, Intune lets you pause a ring
+                for up to 35 days while Microsoft fixes it
+              </div>
+            </div>
+            <span class="rv v-ne">Available if needed</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-passwordless" class="pane">
+        <div class="callout c-ok">
+          <strong
+            >Windows Hello for Business eliminates passwords on laptops
+            entirely.</strong
+          >
+          Users sign in with PIN + biometrics (face/fingerprint). The credential
+          never leaves the device — it's backed by the TPM chip. Cannot be
+          phished. Cannot be stolen from a server database. This is the single
+          biggest usability + security improvement you can make.
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            Enable Windows Hello for Business via Intune
+          </div>
+          <div class="callout c-info">
+            <strong>Path:</strong> Intune → Devices → Enrollment → Windows
+            enrollment → Windows Hello for Business
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Configure Windows Hello for Business</div>
+            </div>
+            <span class="rv v-en">Enable</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Use a Trusted Platform Module (TPM)</div>
+              <div class="rd">
+                Requires hardware TPM — keys are hardware-protected, not just
+                software. All modern laptops have TPM 2.0.
+              </div>
+            </div>
+            <span class="rv v-en">Required</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Minimum PIN length</div></div>
+            <span class="rv v-ne">8 digits</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Maximum PIN length</div></div>
+            <span class="rv v-ne">20 digits</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Lowercase letters in PIN</div></div>
+            <span class="rv v-ne">Allowed</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Special characters in PIN</div>
+            </div>
+            <span class="rv v-ne">Allowed</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Use biometrics</div>
+              <div class="rd">
+                Allow Face recognition and fingerprint as alternatives to PIN
+              </div>
+            </div>
+            <span class="rv v-en">Enabled</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Use enhanced anti-spoofing</div>
+              <div class="rd">
+                Requires IR camera for face recognition — blocks photo spoofing
+                attempts
+              </div>
+            </div>
+            <span class="rv v-en">Required if supported</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Allow phone sign-in (FIDO2)</div>
+              <div class="rd">
+                Also enable FIDO2 security keys and Microsoft Authenticator
+                passwordless for web sign-ins
+              </div>
+              <div class="rp">
+                Entra ID → Security → Authentication methods → Microsoft
+                Authenticator → Enable passwordless
+              </div>
+            </div>
+            <span class="rv v-en">Enable</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            What users experience after Hello for Business
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Laptop sign-in</div>
+              <div class="rd">
+                Face scan or fingerprint — no password typed. If biometrics
+                fail, PIN fallback (never password).
+              </div>
+            </div>
+            <span class="rv v-en">Passwordless</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Opening Outlook / Teams / SharePoint</div>
+              <div class="rd">
+                SSO via Windows credential — no additional sign-in prompt for
+                M365 apps on the managed laptop
+              </div>
+            </div>
+            <span class="rv v-en">Silent SSO</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Accessing sensitive resources</div>
+              <div class="rd">
+                Step-up authentication via Authenticator app push — no password
+                needed
+              </div>
+            </div>
+            <span class="rv v-en">Authenticator push</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">MFA for CA policies</div>
+              <div class="rd">
+                Windows Hello for Business satisfies MFA — the laptop sign-in
+                itself counts as a strong authentication factor
+              </div>
+            </div>
+            <span class="rv v-en">Satisfies MFA</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-backup" class="pane">
+        <div class="priority-banner">
+          <strong>Critical gap:</strong> M365 is NOT a backup solution.
+          Microsoft's SLA covers service availability — not data recovery from
+          accidental deletion, ransomware corruption, or malicious insider
+          deletion. OneDrive version history helps but has limits. You need an
+          explicit backup strategy.
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            Option 1 — Microsoft 365 Backup (native, newest)
+          </div>
+          <div class="callout c-info">
+            Microsoft 365 Backup is a relatively new paid add-on that provides
+            fast point-in-time restore for OneDrive, SharePoint, and Exchange.
+            No third-party tool needed.
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Coverage</div></div>
+            <span class="rv v-ne">OneDrive · SharePoint · Exchange</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Restore granularity</div></div>
+            <span class="rv v-ne">Up to 180 days back</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Restore speed</div>
+              <div class="rd">
+                Restore entire site or mailbox in minutes — much faster than
+                third-party tools
+              </div>
+            </div>
+            <span class="rv v-en">Fast native restore</span>
+          </div>
+          <div class="row">
+            <div class="rl"><div class="rn">Cost</div></div>
+            <span class="rv v-wa">Paid add-on — per GB pricing</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Path</div>
+              <div class="rp">
+                Microsoft 365 admin center → Settings → Microsoft 365 Backup
+              </div>
+            </div>
+            <span class="rv v-in">Configure</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            Option 2 — Third-party backup (recommended for full control)
+          </div>
+          <div class="callout c-warn">
+            If Microsoft 365 Backup cost is a concern, third-party solutions
+            give you more control, longer retention, and often cover Teams
+            conversations which M365 Backup does not.
+          </div>
+          <table class="full-table">
+            <tr>
+              <th>Solution</th>
+              <th>Coverage</th>
+              <th>Retention</th>
+              <th>Note</th>
+            </tr>
+            <tr>
+              <td>Veeam Backup for M365</td>
+              <td>Exchange, OneDrive, SharePoint, Teams</td>
+              <td>Unlimited</td>
+              <td>Industry standard — on-prem or cloud storage</td>
+            </tr>
+            <tr>
+              <td>Acronis Cyber Protect Cloud</td>
+              <td>M365 + endpoint backup</td>
+              <td>Configurable</td>
+              <td>Good for SMB — combines M365 + laptop backup</td>
+            </tr>
+            <tr>
+              <td>Druva inSync</td>
+              <td>M365 + endpoints + SaaS</td>
+              <td>Unlimited</td>
+              <td>Cloud-native, easiest management</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            What OneDrive version history DOES cover (no extra cost)
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">File version history</div>
+              <div class="rd">
+                Every file in OneDrive keeps 500 versions by default — user can
+                restore any previous version themselves
+              </div>
+            </div>
+            <span class="rv v-en">500 versions</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Recycle bin retention</div>
+              <div class="rd">
+                Deleted files stay in recycle bin for 93 days before permanent
+                deletion
+              </div>
+            </div>
+            <span class="rv v-ne">93 days</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Ransomware detection & restore</div>
+              <div class="rd">
+                OneDrive detects ransomware encryption patterns and alerts the
+                user with a restore option back to before the attack
+              </div>
+            </div>
+            <span class="rv v-en">Built-in detection</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">What it does NOT cover</div>
+              <div class="rd">
+                Teams channel messages, admin-deleted mailboxes, tenant-level
+                disasters, data deleted before retention window
+              </div>
+            </div>
+            <span class="rv v-bl">Not covered</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-awareness" class="pane">
+        <div class="callout c-ok">
+          <strong
+            >Attack Simulator is included in M365 Business Premium (Defender for
+            Office 365 Plan 1).</strong
+          >
+          It lets you run real-world phishing simulations against your own users
+          — without them knowing it's a test. Users who click get immediate
+          training. This is the most direct way to measure and reduce human
+          risk.
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Set up your first simulation campaign</div>
+          <div class="callout c-info">
+            <strong>Path:</strong> security.microsoft.com → Email &
+            collaboration → Attack simulation training → Simulations → Launch a
+            simulation
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">1</div>
+            <div class="sim-body">
+              <div class="sim-title">Choose technique — Credential Harvest</div>
+              <div class="sim-desc">
+                Most common real-world attack. Fake Microsoft login page — user
+                enters their password. You see exactly who fell for it and what
+                credentials they submitted.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">2</div>
+            <div class="sim-body">
+              <div class="sim-title">Select payload — Microsoft-themed</div>
+              <div class="sim-desc">
+                Use pre-built payloads that mimic real Microsoft notifications:
+                "Your password is expiring", "Unusual sign-in detected", "Shared
+                document" — highest click rates so most useful for training.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">3</div>
+            <div class="sim-body">
+              <div class="sim-title">
+                Target — All users, randomized delivery
+              </div>
+              <div class="sim-desc">
+                Send to all users but stagger delivery over 2 days so it feels
+                organic and users can't warn each other.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">4</div>
+            <div class="sim-body">
+              <div class="sim-title">
+                Assign training — auto-assign to users who click
+              </div>
+              <div class="sim-desc">
+                Users who click the link immediately see a "you were phished"
+                page and get auto-enrolled in a 10-minute training module. They
+                complete it within 30 days — tracked in the portal.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">5</div>
+            <div class="sim-body">
+              <div class="sim-title">
+                Review results — click rate, repeat offenders
+              </div>
+              <div class="sim-desc">
+                After 7 days, review the simulation report. Any user who clicks
+                on 3+ simulations is a high-risk user — consider mandatory
+                extended training or stricter CA policy (step-up auth).
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Simulation schedule — run quarterly</div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Q1 — Credential harvest</div>
+              <div class="rd">Fake Microsoft password expiry notice</div>
+            </div>
+            <span class="rv v-ne">Run Jan/Feb</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Q2 — Malware attachment</div>
+              <div class="rd">Fake invoice PDF with macro</div>
+            </div>
+            <span class="rv v-ne">Run Apr/May</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Q3 — Link in attachment</div>
+              <div class="rd">Fake shared document link from "CEO"</div>
+            </div>
+            <span class="rv v-ne">Run Jul/Aug</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Q4 — Spear phishing</div>
+              <div class="rd">
+                Personalized email referencing user's department or role
+              </div>
+            </div>
+            <span class="rv v-ne">Run Oct/Nov</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Target click rate goal</div>
+              <div class="rd">
+                Industry average is ~30%. Aim to get Eldib & Co below 5% within
+                12 months.
+              </div>
+            </div>
+            <span class="rv v-en">Target: under 5%</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-governance" class="pane">
+        <div class="section">
+          <div class="sec-title">Microsoft Teams governance</div>
+          <div class="callout c-warn">
+            <strong
+              >Without Teams governance, every user can create unlimited Teams,
+              invite external guests, and install any app.</strong
+            >
+            In 6 months you'll have 200 unmanaged teams and no idea what's in
+            them.
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Who can create Microsoft 365 Groups / Teams</div>
+              <div class="rd">
+                Restrict team creation to IT or department heads only. Others
+                submit a request.
+              </div>
+              <div class="rp">
+                Entra ID → Groups → General → Users can create Microsoft 365
+                groups → No, then assign a group allowed to create
+              </div>
+            </div>
+            <span class="rv v-ne">Restricted group</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Microsoft 365 Groups expiration policy</div>
+              <div class="rd">
+                Auto-expire inactive teams/groups after 180 days. Owner gets 3
+                email reminders. If nobody renews, the team and all its data is
+                deleted after 30-day soft-delete period.
+              </div>
+              <div class="rp">Entra ID → Groups → Expiration</div>
+            </div>
+            <span class="rv v-ne">180 days</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Guest access in Teams</div>
+              <div class="rd">
+                Control whether external people can be invited to Teams
+                channels. Restrict to IT-approved domains only.
+              </div>
+              <div class="rp">
+                Teams admin center → Org-wide settings → Guest access
+              </div>
+            </div>
+            <span class="rv v-wa">Restrict to approved domains</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">External access (federation)</div>
+              <div class="rd">
+                Restrict Teams federation to approved partner tenants only —
+                prevents unsolicited external Teams messages
+              </div>
+            </div>
+            <span class="rv v-ne">Allow specific domains only</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Third-party app permissions</div>
+              <div class="rd">
+                Block users from installing unverified third-party apps into
+                Teams
+              </div>
+              <div class="rp">
+                Teams admin center → Teams apps → Permission policies
+              </div>
+            </div>
+            <span class="rv v-bl">Block third-party apps</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Retention policies (Microsoft Purview)</div>
+          <div class="callout c-info">
+            <strong>Path:</strong> compliance.microsoft.com → Data lifecycle
+            management → Retention policies → Create a retention policy
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Exchange email retention</div>
+              <div class="rd">
+                Keep all emails for 3 years minimum. Legal and HR investigations
+                require historical email.
+              </div>
+            </div>
+            <span class="rv v-ne">Keep 3 years</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Teams channel messages</div>
+              <div class="rd">
+                Keep Teams conversation history — it's business communication
+                and discoverable in disputes
+              </div>
+            </div>
+            <span class="rv v-ne">Keep 3 years</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">SharePoint and OneDrive</div>
+              <div class="rd">
+                Keep deleted files recoverable for 1 year (beyond the default
+                93-day recycle bin)
+              </div>
+            </div>
+            <span class="rv v-ne">Keep 1 year after deletion</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Action after retention period</div>
+              <div class="rd">
+                Delete automatically after retention ends — prevents unlimited
+                data accumulation
+              </div>
+            </div>
+            <span class="rv v-ne">Delete after period</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            Named accounts — service accounts & shared mailboxes
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Service accounts — disable interactive login</div>
+              <div class="rd">
+                Any account used by apps or scripts should be blocked from
+                interactive sign-in and excluded from MFA policies that require
+                Authenticator — use CA to restrict to specific apps/IPs only
+              </div>
+            </div>
+            <span class="rv v-bl">Block interactive sign-in</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Shared mailboxes — no direct login</div>
+              <div class="rd">
+                Shared mailboxes should have no password and no direct sign-in.
+                Users access via delegation only. Block direct sign-in via CA
+                filter.
+              </div>
+            </div>
+            <span class="rv v-bl">No direct sign-in</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="pane-ir" class="pane">
+        <div class="callout c-err">
+          <strong
+            >You have no incident response plan yet — this is a critical
+            gap.</strong
+          >
+          When (not if) a security incident happens, the first 30 minutes are
+          the most important. Without a documented plan, you lose hours making
+          decisions under pressure that should be pre-decided.
+        </div>
+
+        <div class="section">
+          <div class="sec-title">
+            Incident response plan — key documents to create
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Contact list</div>
+              <div class="rd">
+                Who to call: IT admin, company management, legal counsel,
+                Microsoft support (Business Premium includes 24/7 technical
+                support), cyber insurance provider if applicable
+              </div>
+            </div>
+            <span class="rv v-wa">Create now</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Asset inventory</div>
+              <div class="rd">
+                Full list of all laptops (serial numbers, assigned users),
+                servers if any, third-party SaaS apps used. Intune gives you
+                this for managed devices.
+              </div>
+            </div>
+            <span class="rv v-wa">Export from Intune</span>
+          </div>
+          <div class="row">
+            <div class="rl">
+              <div class="rn">Critical data map</div>
+              <div class="rd">
+                Where is your most sensitive data? Specific SharePoint sites,
+                OneDrive folders, Exchange mailboxes. Know what to protect first
+                in a ransomware scenario.
+              </div>
+            </div>
+            <span class="rv v-wa">Document locations</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Playbook — compromised user account</div>
+          <div class="sim-row">
+            <div class="sim-num">1</div>
+            <div class="sim-body">
+              <div class="sim-title">
+                Contain — disable the account immediately
+              </div>
+              <div class="sim-desc">
+                Entra ID → Users → select user → Block sign-in. This invalidates
+                all active sessions within ~1 hour (or immediately if CAE is
+                enabled).
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">2</div>
+            <div class="sim-body">
+              <div class="sim-title">Revoke all active tokens</div>
+              <div class="sim-desc">
+                Entra ID → Users → select user → Revoke sessions. This
+                immediately kills all active access tokens for the user across
+                all apps.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">3</div>
+            <div class="sim-body">
+              <div class="sim-title">Reset MFA methods</div>
+              <div class="sim-desc">
+                Entra ID → Users → Authentication methods → Delete all MFA
+                methods. Then re-register with the real user in person.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">4</div>
+            <div class="sim-body">
+              <div class="sim-title">
+                Investigate — what did the attacker access?
+              </div>
+              <div class="sim-desc">
+                Entra ID Sign-in logs → filter by user → last 7 days. Defender
+                portal → Incidents. Check Audit log for any mailbox rules,
+                forwarding rules, or files accessed/downloaded.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">5</div>
+            <div class="sim-body">
+              <div class="sim-title">Check for persistence mechanisms</div>
+              <div class="sim-desc">
+                Outlook → check for new inbox rules forwarding email externally.
+                Entra ID → Enterprise apps → check for newly granted app
+                permissions. Teams → check for new guest invitations sent.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">6</div>
+            <div class="sim-body">
+              <div class="sim-title">Re-enable with fresh credentials</div>
+              <div class="sim-desc">
+                Force password reset. Re-register MFA in person or via video
+                call. Re-enable the account. Monitor for 48 hours with elevated
+                audit logging.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sec-title">Playbook — ransomware on a device</div>
+          <div class="sim-row">
+            <div class="sim-num">1</div>
+            <div class="sim-body">
+              <div class="sim-title">Isolate the device immediately</div>
+              <div class="sim-desc">
+                Defender portal → Devices → select device → Isolate device. This
+                cuts all network connections while keeping Defender telemetry
+                active for investigation.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">2</div>
+            <div class="sim-body">
+              <div class="sim-title">Do NOT pay the ransom</div>
+              <div class="sim-desc">
+                Since all data is in OneDrive (which you now have enforced), you
+                can restore from OneDrive ransomware recovery + version history.
+                The device itself can be wiped and re-enrolled from Intune.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">3</div>
+            <div class="sim-body">
+              <div class="sim-title">Wipe and re-enroll the device</div>
+              <div class="sim-desc">
+                Intune → Devices → select device → Wipe (full wipe). All company
+                data removed. Re-enroll via Autopilot. User's data is safe in
+                OneDrive.
+              </div>
+            </div>
+          </div>
+          <div class="sim-row">
+            <div class="sim-num">4</div>
+            <div class="sim-body">
+              <div class="sim-title">Restore OneDrive files</div>
+              <div class="sim-desc">
+                OneDrive web → Settings → Restore your OneDrive → select a date
+                before the attack. All files restored to that point-in-time
+                state.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function showCat(name, btn) {
+        document
+          .querySelectorAll(".pane")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".cat-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.getElementById("pane-" + name).classList.add("active");
+        btn.classList.add("active");
+      }
+    </script>
+  </body>
+</html>
